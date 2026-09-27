@@ -1,0 +1,14 @@
+{
+  "title": "Shiftaan | Shift Tracker App for Security Guards & Shift Workers",
+  "description": "Track your shifts, hours and pay in one place with Shiftaan — the shift tracking app built for security guards and workers with multiple employers.",
+  "openGraph": {
+    "image": "/assets/social-share.png"
+  },
+  "robots": {
+    "index": true
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

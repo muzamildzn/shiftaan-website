@@ -1,0 +1,59 @@
+# Shiftaan marketing site — Apache/cPanel config
+# This file must sit in the same folder as index.html on the server
+# (i.e. the contents of /dist go straight into public_html).
+
+RewriteEngine On
+
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+
+# Force non-www -> www is NOT applied here; canonical URL in index.html
+# uses the bare domain (https://shiftaan.com). If you prefer the www
+# subdomain instead, add a redirect here and update index.html + sitemap.xml.
+
+# BEGIN-PRERENDERED-ROUTES (generated automatically by scripts/prerender.mjs — do not edit by hand, it's overwritten on every build)
+# These must come before the generic file/folder check below: each route below
+# IS a real directory (dist/pricing/index.html etc.), so without this block
+# Apache's own directory handling would intercept it first and 301-redirect
+# /pricing to /pricing/ before ever reaching index.html.
+# END-PRERENDERED-ROUTES
+
+# Never rewrite requests for files or folders that actually exist
+# (assets, robots.txt, sitemap.xml, favicon, etc.)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Everything else is a client-side route (App.tsx reads location.pathname),
+# so always serve index.html and let React render the right page.
+RewriteRule ^ index.html [L]
+
+# Cache hashed build assets aggressively, keep HTML fresh
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|svg|png|jpg|jpeg|woff2?)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# Gzip common text assets
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# Friendly 404 (React also renders a 404 page for unknown client-side
+# routes; this fires for genuinely missing static files, e.g. under /assets)
+ErrorDocument 404 /404.html
