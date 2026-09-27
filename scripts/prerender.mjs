@@ -25,7 +25,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { pageMeta, notFoundMeta, posts as seedPosts, faqs, siteUrl } from "../src/content.js";
+import { pageMeta, notFoundMeta, posts as seedPosts, faqs, siteUrl, blogTitle, absImage } from "../src/content.js";
 
 // Must match src/supabase.js — duplicated here because this script runs in
 // plain Node, outside the Vite/browser bundle.
@@ -93,7 +93,7 @@ function blogPostingJsonLd(p) {
     "@type": "BlogPosting",
     headline: p.title,
     description: p.excerpt,
-    image: p.featured_image || `${siteUrl}/assets/social-share.png`,
+    image: absImage(p.featured_image) || `${siteUrl}/assets/social-share.png`,
     datePublished: p.published_at,
     dateModified: p.updated_at || p.published_at,
     author: { "@type": "Person", name: p.author || "Malik Muzamil" },
@@ -152,14 +152,14 @@ for (const [routePath, meta] of Object.entries(pageMeta)) {
 // Individual blog posts — live from Supabase (the CMS is the source of truth).
 const posts = await fetchPublishedPosts();
 for (const p of posts) {
-  const title = p.seo_title ? `${p.seo_title} | Shiftaan Blog` : `${p.title} | Shiftaan Blog`;
+  const title = blogTitle(p.seo_title || p.title);
   const description = p.meta_description || p.excerpt;
   const html = render({
     routePath: `/blogs/${p.slug}`,
     title,
     description,
     canonicalPath: p.canonical_url ? new URL(p.canonical_url).pathname : `/blogs/${p.slug}`,
-    image: p.featured_image || undefined,
+    image: absImage(p.featured_image) || undefined,
     jsonLd: blogPostingJsonLd(p),
     ogType: "article",
   });

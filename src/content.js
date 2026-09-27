@@ -4,6 +4,13 @@
 
 export const siteUrl = "https://shiftaan.com";
 
+// Blog post <title>. seo_title from the CMS may already end in "| Shiftaan Blog",
+// so strip it before appending to avoid "… | Shiftaan Blog | Shiftaan Blog".
+export const blogTitle = (t) => `${String(t).replace(/(\s*\|\s*Shiftaan Blog)+\s*$/i, "")} | Shiftaan Blog`;
+
+// Make a CMS image value ("x.jpg", "/assets/x.jpg" or a full URL) an absolute URL for og:image / JSON-LD.
+export const absImage = (img) => !img ? "" : /^https?:\/\//.test(img) ? img : img.startsWith("/") ? siteUrl + img : `${siteUrl}/assets/${img}`;
+
 // [slug, title, excerpt, image, category, readTime, isoDate]
 export const posts = [
   ["how-to-track-your-work-hours-when-you-have-multiple-jobs","How to Track Your Work Hours When You Have Multiple Jobs","Why the Notes app isn't enough—and a simpler way to track hours, rates and unpaid shifts.","Track-Hours-Across-Multiple-Jobs.jpg","Shift tracking","6 min","2026-09-24"],
