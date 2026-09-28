@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { supabase, ADMIN_EMAIL } from "./supabase.js";
 import { BlogPostBody } from "./BlogPostBody";
+import { IconArrowLeft } from "./icons";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-+|-+$)/g, "");
@@ -159,7 +160,7 @@ function AdminEditor({ id }: { id?: string }) {
 
   return (
     <div className="admineditor">
-      <header><h1>{id ? "Edit post" : "New post"}</h1><a className="btn secondary" href="/admin">← Back to posts</a></header>
+      <header><h1>{id ? "Edit post" : "New post"}</h1><a className="btn secondary" href="/admin"><IconArrowLeft size={14}/> Back to posts</a></header>
       {error && <p className="adminerror">{error}</p>}
       <div className="editorgrid">
         <div className="editorfields">

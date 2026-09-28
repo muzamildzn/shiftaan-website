@@ -118,3 +118,15 @@ footer{background:#f8f9fb;color:var(--dark);padding:80px 0 28px;border-top:1px s
 .deletesteps{list-style:none;padding:0;counter-reset:step;display:grid;gap:10px}
 .deletesteps li{counter-increment:step;display:flex;gap:14px;align-items:center;color:#344054;font-weight:600;font-size:.95rem}
 .deletesteps li::before{content:counter(step);flex:none;width:28px;height:28px;border-radius:50%;background:var(--pale);color:var(--blue);font-weight:800;font-size:.8rem;display:grid;place-items:center}
+/* Inline icon alignment: SVGs default to baseline, which sits low next to
+   text, so nudge them up slightly wherever one sits inline with a label. */
+svg{vertical-align:-2px}
+.btn span{display:inline-flex;align-items:center}
+.trust{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap}
+.trust svg{color:var(--blue);flex:none}
+.textlink,.faqpage .textlink,b:has(svg){display:inline-flex;align-items:center;gap:5px}
+.pricing li{display:flex;align-items:center;gap:9px}
+.pricing li svg{color:var(--green);flex:none}
+.arr{display:inline-flex}
+.uitop button,.ui label span{display:inline-flex;align-items:center;gap:3px}
+.payui em{display:inline-flex;align-items:center;gap:4px}
