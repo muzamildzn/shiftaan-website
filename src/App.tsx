@@ -20,16 +20,37 @@ function Footer(){
   const cols=[["Product",["How it works","/how-it-works"],["Pricing","/pricing"],["FAQ","/faq"]],["Resources",["Blog","/blogs"],["Support","/support"]],["Company",["About","/about"]],["Legal",["Privacy Policy","/privacy"],["Terms & Conditions","/terms"],["Cookie Policy","/cookies"]]];
   return <footer><div className="wrap footergrid"><div><Logo/><p>Track your shifts, hours and pay in one place.</p><CTA/></div><div className="footlinks">{cols.map(c=><div key={c[0] as string}><b>{c[0]}</b>{c.slice(1).map((x:any)=><A href={x[1]} key={x[1]}>{x[0]}</A>)}</div>)}</div></div><div className="wrap fine"><span>© 2026 Shiftaan. All rights reserved.</span><span><A href="https://x.com/tryshiftaan">X</A> · <A href="https://instagram.com/tryshiftaan">Instagram</A> · @tryshiftaan</span></div></footer>
 }
-const COOKIE_NOTICE_KEY="shiftaan-cookie-notice-dismissed";
+const GA_ID="G-N1XVMPYP5G";
+const COOKIE_CONSENT_KEY="shiftaan-cookie-consent"; // "accepted" | "declined"
+
+// Loads Google Analytics only once the visitor has actively accepted —
+// never on page load, never for a "declined" or unmade choice. This is the
+// only thing on shiftaan.com that sets a non-essential cookie.
+function loadAnalytics(){
+  if((window as any).__shiftaanGaLoaded)return;
+  (window as any).__shiftaanGaLoaded=true;
+  const s=document.createElement("script");
+  s.async=true;
+  s.src=`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+  document.head.appendChild(s);
+  (window as any).dataLayer=(window as any).dataLayer||[];
+  function gtag(...args:any[]){(window as any).dataLayer.push(args)}
+  (window as any).gtag=gtag;
+  gtag("js",new Date());
+  gtag("config",GA_ID,{anonymize_ip:true});
+}
+function getCookieConsent(){try{return localStorage.getItem(COOKIE_CONSENT_KEY)}catch{return null}}
 function CookieBanner(){
   const [show,setShow]=useState(false);
-  useEffect(()=>{try{if(!localStorage.getItem(COOKIE_NOTICE_KEY))setShow(true)}catch{setShow(true)}},[]);
-  function dismiss(){setShow(false);try{localStorage.setItem(COOKIE_NOTICE_KEY,"1")}catch{}}
+  useEffect(()=>{
+    const choice=getCookieConsent();
+    if(choice==="accepted")loadAnalytics();
+    else if(!choice)setShow(true);
+  },[]);
+  function accept(){setShow(false);try{localStorage.setItem(COOKIE_CONSENT_KEY,"accepted")}catch{}loadAnalytics()}
+  function decline(){setShow(false);try{localStorage.setItem(COOKIE_CONSENT_KEY,"declined")}catch{}}
   if(!show)return null;
-  // The marketing site itself sets no cookies (see /cookies) — this banner
-  // is about the essential sign-in cookie set once someone follows a "Try
-  // Shiftaan Free" link into the app at app.shiftaan.com.
-  return <div className="cookiebanner" role="dialog" aria-label="Cookie notice"><p>This website doesn't use tracking or advertising cookies. Signing in to the Shiftaan app uses one essential cookie to keep you logged in. See our <A href="/cookies">Cookie Policy</A>.</p><button className="btn" onClick={dismiss}>Got it</button></div>;
+  return <div className="cookiebanner" role="dialog" aria-label="Cookie notice"><p>We'd like to use Google Analytics to understand how visitors use this site. Signing in to the Shiftaan app also uses one essential cookie to keep you logged in, always on. See our <A href="/cookies">Cookie Policy</A>.</p><div className="cookiebtns"><button className="btn secondary" onClick={decline}>Necessary only</button><button className="btn" onClick={accept}>Accept</button></div></div>;
 }
 const Layout=({children}:{children:ReactNode})=><><Nav/><main>{children}</main><Footer/><CookieBanner/></>;
 function Heading({tag,title,copy,center=false}:{tag?:string;title:string;copy?:string;center?:boolean}){return <div className={`heading ${center?"center":""}`}>{tag&&<span className="eyebrow">{tag}</span>}<h2>{title}</h2>{copy&&<p>{copy}</p>}</div>}
@@ -152,7 +173,7 @@ const privacyContent:[string,string|string[]][]=[
   ["How we use your information","We use your information to create and secure your account, to calculate your hours, pay and earnings summaries from the shifts you log, to process subscription payments for the paid plan, to respond to support requests, and to keep the service reliable and secure."],
   ["How we store your information","Shiftaan's data is stored using Supabase, our backend and database provider, which applies industry-standard security practices. Your information is kept only for as long as your account is active or as needed to provide the service."],
   ["Data security","We take reasonable technical and organisational steps to protect your information, but no online service can be guaranteed 100% secure. We recommend using a strong, unique password for your Shiftaan account."],
-  ["Third-party services","Shiftaan currently uses Supabase for authentication and data storage, and Stripe for processing payments on the paid plan. These providers only receive the information needed to perform their function. The shiftaan.com marketing website does not currently use any advertising or analytics services."],
+  ["Third-party services","Shiftaan currently uses Supabase for authentication and data storage, and Stripe for processing payments on the paid plan. These providers only receive the information needed to perform their function. The shiftaan.com marketing website uses Google Analytics, but only if you accept it from the cookie banner — see our Cookie Policy for details. We don't use any advertising services."],
   ["Data sharing","We do not sell your personal information. We share information only with the service providers listed above, where necessary to run Shiftaan, or where we're required to by law."],
   ["Cookies","The shiftaan.com marketing website does not use cookies. See our Cookie Policy for details on the essential technology the app uses to keep you signed in."],
   ["Your rights","Depending on where you live, you may have rights to access, correct, export or delete your personal information, and to object to or restrict how it's used. To exercise any of these rights, contact us using the details below."],
@@ -182,18 +203,24 @@ const termsContent:[string,string|string[]][]=[
 ];
 const cookiesContent:[string,string|string[]][]=[
   ["What cookies are","Cookies (and similar technologies like local storage) are small pieces of data a website or app can store in your browser, typically to remember who you are or how you've used the site."],
-  ["What the Shiftaan website uses","The shiftaan.com marketing website — the pages you're reading now — does not set any cookies. It doesn't use advertising cookies, analytics cookies, or any third-party tracking scripts."],
+  ["What the Shiftaan website uses","The shiftaan.com marketing website sets no cookies by default. If you accept analytics from the cookie banner, Google Analytics sets cookies (see below) to understand how visitors use the site. We never use advertising cookies."],
   ["What the Shiftaan app uses","To keep you signed in, the Shiftaan app (app.shiftaan.com) relies on essential authentication storage provided by Supabase, our authentication provider, held in your browser as local storage or a cookie depending on your device. This is strictly necessary for the app to work — without it, you'd be signed out every time you opened it."],
-  ["Analytics and measurement","We don't currently use analytics or measurement cookies on the marketing website. If this changes in future, we'll update this policy first."],
-  ["Third-party cookies","No third-party cookies are currently set by the shiftaan.com marketing website."],
-  ["Managing cookies","Because the marketing website doesn't set cookies, there's nothing to manage here. For the app, clearing your browser's site data or local storage will sign you out and require you to log in again."],
+  ["Analytics and measurement","With your consent, given through the cookie banner, we use Google Analytics to understand how visitors use the marketing website — which pages are visited, roughly how, and from where. Google Analytics sets its own cookies (typically named _ga and _ga_*) to do this, and IP addresses are anonymised before being stored. It only runs if you click \"Accept\" on the cookie banner; choosing \"Necessary only\" means it never loads. You can opt out of Google Analytics across all websites using Google's browser add-on at tools.google.com/dlpage/gaoptout."],
+  ["Third-party cookies","Google Analytics is the only third-party cookie the shiftaan.com marketing website can set, and only after you accept it."],
+  ["Managing cookies","Use the buttons below to change your choice at any time — this clears your saved preference and the banner reappears immediately."],
   ["Contact","Questions about this policy can be sent through the contact form on our Support page."],
 ];
+function CookieChoiceControl(){
+  const [choice,setChoice]=useState<string|null>(null);
+  useEffect(()=>{setChoice(getCookieConsent())},[]);
+  function reset(){try{localStorage.removeItem(COOKIE_CONSENT_KEY)}catch{}location.reload()}
+  return <div className="cookiechoice"><p>Your current choice: <b>{choice==="accepted"?"Analytics accepted":choice==="declined"?"Necessary only":"Not yet chosen"}</b></p><button className="btn secondary" onClick={reset}>Change my cookie choice</button></div>;
+}
 function Legal({type}:{type:string}){
   const titles:any={privacy:"Privacy Policy",terms:"Terms & Conditions",cookies:"Cookie Policy"};
   const content:any={privacy:privacyContent,terms:termsContent,cookies:cookiesContent};
   const data:[string,string|string[]][]=content[type];
-  return <Layout><section className="legal"><div className="wrap"><aside><b>Legal</b><A href="/privacy">Privacy Policy</A><A href="/terms">Terms & Conditions</A><A href="/cookies">Cookie Policy</A></aside><article><span className="eyebrow">Last updated: 27 September 2026</span><h1>{titles[type]}</h1><p className="lead">{legalNote}</p>{data.map(([h,c])=><section key={h}><h2>{h}</h2>{Array.isArray(c)?<ul>{c.map(li=><li key={li}>{li}</li>)}</ul>:<p>{c}</p>}</section>)}</article></div></section></Layout>;
+  return <Layout><section className="legal"><div className="wrap"><aside><b>Legal</b><A href="/privacy">Privacy Policy</A><A href="/terms">Terms & Conditions</A><A href="/cookies">Cookie Policy</A></aside><article><span className="eyebrow">Last updated: 27 September 2026</span><h1>{titles[type]}</h1><p className="lead">{legalNote}</p>{type==="cookies"&&<CookieChoiceControl/>}{data.map(([h,c])=><section key={h}><h2>{h}</h2>{Array.isArray(c)?<ul>{c.map(li=><li key={li}>{li}</li>)}</ul>:<p>{c}</p>}</section>)}</article></div></section></Layout>;
 }
 function NotFound(){return <Layout><section className="lost"><div><strong>404</strong><h1>Looks like this shift got lost.</h1><p>The page you're looking for doesn't exist.</p><div className="actions"><A className="btn secondary" href="/">Back home</A><CTA/></div></div></section></Layout>}
 function Router(){const p=location.pathname.replace(/\/+$/,"")||"/";if(p==="/")return <Home/>;if(p==="/how-it-works")return <How/>;if(p==="/pricing")return <Pricing/>;if(p==="/blogs")return <Blogs/>;if(p.startsWith("/blogs/"))return <Blog slug={p.split("/").pop()||""}/>;if(p==="/about")return <About/>;if(p==="/support"||p==="/contact")return <Support/>;if(p==="/faq")return <Layout><FAQ page/><Final/></Layout>;if(["/privacy","/terms","/cookies"].includes(p))return <Legal type={p.slice(1)}/>;if(p==="/admin"||p.startsWith("/admin/"))return <AdminGate/>;return <NotFound/>}

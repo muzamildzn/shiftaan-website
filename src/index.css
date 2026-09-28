@@ -105,8 +105,13 @@ footer{background:#f8f9fb;color:var(--dark);padding:80px 0 28px;border-top:1px s
 .contact label.hp{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .formerror{grid-column:1/-1;color:#b42318;background:#ffedeb;border-radius:10px;padding:11px 14px;font-size:.85rem;margin:2px 0 0}
 .contact .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-.cookiebanner{position:fixed;left:18px;right:18px;bottom:18px;z-index:50;max-width:560px;margin:0 auto;background:#101828;color:#fff;border-radius:18px;padding:20px 22px;box-shadow:0 20px 50px #0b1a3a55;display:flex;flex-wrap:wrap;align-items:center;gap:16px 20px}
+.cookiebanner{position:fixed;left:18px;right:18px;bottom:18px;z-index:50;max-width:620px;margin:0 auto;background:#101828;color:#fff;border-radius:18px;padding:20px 22px;box-shadow:0 20px 50px #0b1a3a55;display:flex;flex-wrap:wrap;align-items:center;gap:16px 20px}
 .cookiebanner p{color:#c9d3e6;font-size:.86rem;margin:0;flex:1 1 260px}
 .cookiebanner a{color:#8fb1ff;font-weight:700}
 .cookiebanner .btn{min-height:40px;padding:0 18px;font-size:.85rem;white-space:nowrap}
-@media(max-width:480px){.cookiebanner{flex-direction:column;align-items:stretch;text-align:left}.cookiebanner .btn{width:100%}}
+.cookiebanner .btn.secondary{background:transparent;color:#fff;border-color:#ffffff33}
+.cookiebtns{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:480px){.cookiebanner{flex-direction:column;align-items:stretch;text-align:left}.cookiebtns{flex-direction:column}.cookiebanner .btn{width:100%}}
+.cookiechoice{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:26px 0 34px}
+.cookiechoice p{margin:0;font-size:.86rem}
+.cookiechoice .btn{min-height:38px;padding:0 16px;font-size:.82rem}
