@@ -216,14 +216,19 @@ function CookieChoiceControl(){
   function reset(){try{localStorage.removeItem(COOKIE_CONSENT_KEY)}catch{}location.reload()}
   return <div className="cookiechoice"><p>Your current choice: <b>{choice==="accepted"?"Analytics accepted":choice==="declined"?"Necessary only":"Not yet chosen"}</b></p><button className="btn secondary" onClick={reset}>Change my cookie choice</button></div>;
 }
+const LegalNav=()=><aside><b>Legal</b><A href="/privacy">Privacy Policy</A><A href="/terms">Terms & Conditions</A><A href="/cookies">Cookie Policy</A><A href="/delete-account">Delete my account</A></aside>;
 function Legal({type}:{type:string}){
   const titles:any={privacy:"Privacy Policy",terms:"Terms & Conditions",cookies:"Cookie Policy"};
   const content:any={privacy:privacyContent,terms:termsContent,cookies:cookiesContent};
   const data:[string,string|string[]][]=content[type];
-  return <Layout><section className="legal"><div className="wrap"><aside><b>Legal</b><A href="/privacy">Privacy Policy</A><A href="/terms">Terms & Conditions</A><A href="/cookies">Cookie Policy</A></aside><article><span className="eyebrow">Last updated: 27 September 2026</span><h1>{titles[type]}</h1><p className="lead">{legalNote}</p>{type==="cookies"&&<CookieChoiceControl/>}{data.map(([h,c])=><section key={h}><h2>{h}</h2>{Array.isArray(c)?<ul>{c.map(li=><li key={li}>{li}</li>)}</ul>:<p>{c}</p>}</section>)}</article></div></section></Layout>;
+  return <Layout><section className="legal"><div className="wrap"><LegalNav/><article><span className="eyebrow">Last updated: 27 September 2026</span><h1>{titles[type]}</h1><p className="lead">{legalNote}</p>{type==="cookies"&&<CookieChoiceControl/>}{data.map(([h,c])=><section key={h}><h2>{h}</h2>{Array.isArray(c)?<ul>{c.map(li=><li key={li}>{li}</li>)}</ul>:<p>{c}</p>}</section>)}</article></div></section></Layout>;
+}
+function DeleteAccount(){
+  const steps=["Open Shiftaan and log in","Go to Profile → Account","Scroll to the \"Danger zone\" section","Tap \"Delete my account\"","Type DELETE to confirm"];
+  return <Layout><section className="legal"><div className="wrap"><LegalNav/><article><span className="eyebrow">Account deletion</span><h1>Delete your Shiftaan account</h1><p className="lead">You can permanently delete your Shiftaan account and all your data at any time, directly from the app:</p><section><ol className="deletesteps">{steps.map(s=><li key={s}>{s}</li>)}</ol></section><section><h2>What gets deleted</h2><p>Your name, email, all companies, sites, shifts, pay records and expenses, and your login itself. This cannot be undone.</p></section><section><h2>What's kept</h2><p>If you ever subscribed to Shiftaan Pro, Stripe (our payment processor) retains its own transaction records separately, as required by financial law, even after your Shiftaan account is deleted. We don't control or access this beyond what's needed to process refunds or legal requests.</p></section><section><h2>Can't log in to delete your own account?</h2><p>Email <a href="mailto:feedback@shiftaan.com">feedback@shiftaan.com</a> from the address on your account and we'll delete it for you within 30 days.</p></section></article></div></section></Layout>;
 }
 function NotFound(){return <Layout><section className="lost"><div><strong>404</strong><h1>Looks like this shift got lost.</h1><p>The page you're looking for doesn't exist.</p><div className="actions"><A className="btn secondary" href="/">Back home</A><CTA/></div></div></section></Layout>}
-function Router(){const p=location.pathname.replace(/\/+$/,"")||"/";if(p==="/")return <Home/>;if(p==="/how-it-works")return <How/>;if(p==="/pricing")return <Pricing/>;if(p==="/blogs")return <Blogs/>;if(p.startsWith("/blogs/"))return <Blog slug={p.split("/").pop()||""}/>;if(p==="/about")return <About/>;if(p==="/support"||p==="/contact")return <Support/>;if(p==="/faq")return <Layout><FAQ page/><Final/></Layout>;if(["/privacy","/terms","/cookies"].includes(p))return <Legal type={p.slice(1)}/>;if(p==="/admin"||p.startsWith("/admin/"))return <AdminGate/>;return <NotFound/>}
+function Router(){const p=location.pathname.replace(/\/+$/,"")||"/";if(p==="/")return <Home/>;if(p==="/how-it-works")return <How/>;if(p==="/pricing")return <Pricing/>;if(p==="/blogs")return <Blogs/>;if(p.startsWith("/blogs/"))return <Blog slug={p.split("/").pop()||""}/>;if(p==="/about")return <About/>;if(p==="/support"||p==="/contact")return <Support/>;if(p==="/faq")return <Layout><FAQ page/><Final/></Layout>;if(["/privacy","/terms","/cookies"].includes(p))return <Legal type={p.slice(1)}/>;if(p==="/delete-account")return <DeleteAccount/>;if(p==="/admin"||p.startsWith("/admin/"))return <AdminGate/>;return <NotFound/>}
 function setMeta(name:string,content:string,attr:"name"|"property"="name"){
   let el=document.querySelector(`meta[${attr}="${name}"]`);
   if(!el){el=document.createElement("meta");el.setAttribute(attr,name);document.head.appendChild(el)}
@@ -237,7 +242,7 @@ function setCanonical(href:string){
 export default function App(){
   useEffect(()=>{
     const p=location.pathname.replace(/\/+$/,"")||"/";
-    const known=["/","/how-it-works","/pricing","/blogs","/about","/support","/contact","/faq","/privacy","/terms","/cookies"];
+    const known=["/","/how-it-works","/pricing","/blogs","/about","/support","/contact","/faq","/privacy","/terms","/cookies","/delete-account"];
     const isBlog=p.startsWith("/blogs/");
     const isAdmin=p==="/admin"||p.startsWith("/admin/");
     scrollTo(0,0);

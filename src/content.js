@@ -73,6 +73,10 @@ export const pageMeta = {
     title: "Cookie Policy | Shiftaan",
     description: "What cookies and essential technology Shiftaan's website and app use, and why.",
   },
+  "/delete-account": {
+    title: "Delete Your Account | Shiftaan",
+    description: "How to permanently delete your Shiftaan account and all your data, directly from the app or by email.",
+  },
 };
 
 export const notFoundMeta = {
