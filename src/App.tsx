@@ -1,5 +1,5 @@
 import { FormEvent, ReactNode, useEffect, useState } from "react";
-import { faqs, pageMeta, notFoundMeta, siteUrl, blogTitle } from "./content.js";
+import { faqs, pageMeta, notFoundMeta, siteUrl, blogTitle, absImage } from "./content.js";
 import { supabase } from "./supabase.js";
 import { AdminGate } from "./Admin";
 import { BlogPostBody } from "./BlogPostBody";
@@ -20,7 +20,18 @@ function Footer(){
   const cols=[["Product",["How it works","/how-it-works"],["Pricing","/pricing"],["FAQ","/faq"]],["Resources",["Blog","/blogs"],["Support","/support"]],["Company",["About","/about"]],["Legal",["Privacy Policy","/privacy"],["Terms & Conditions","/terms"],["Cookie Policy","/cookies"]]];
   return <footer><div className="wrap footergrid"><div><Logo/><p>Track your shifts, hours and pay in one place.</p><CTA/></div><div className="footlinks">{cols.map(c=><div key={c[0] as string}><b>{c[0]}</b>{c.slice(1).map((x:any)=><A href={x[1]} key={x[1]}>{x[0]}</A>)}</div>)}</div></div><div className="wrap fine"><span>© 2026 Shiftaan. All rights reserved.</span><span><A href="https://x.com/tryshiftaan">X</A> · <A href="https://instagram.com/tryshiftaan">Instagram</A> · @tryshiftaan</span></div></footer>
 }
-const Layout=({children}:{children:ReactNode})=><><Nav/><main>{children}</main><Footer/></>;
+const COOKIE_NOTICE_KEY="shiftaan-cookie-notice-dismissed";
+function CookieBanner(){
+  const [show,setShow]=useState(false);
+  useEffect(()=>{try{if(!localStorage.getItem(COOKIE_NOTICE_KEY))setShow(true)}catch{setShow(true)}},[]);
+  function dismiss(){setShow(false);try{localStorage.setItem(COOKIE_NOTICE_KEY,"1")}catch{}}
+  if(!show)return null;
+  // The marketing site itself sets no cookies (see /cookies) — this banner
+  // is about the essential sign-in cookie set once someone follows a "Try
+  // Shiftaan Free" link into the app at app.shiftaan.com.
+  return <div className="cookiebanner" role="dialog" aria-label="Cookie notice"><p>This website doesn't use tracking or advertising cookies. Signing in to the Shiftaan app uses one essential cookie to keep you logged in. See our <A href="/cookies">Cookie Policy</A>.</p><button className="btn" onClick={dismiss}>Got it</button></div>;
+}
+const Layout=({children}:{children:ReactNode})=><><Nav/><main>{children}</main><Footer/><CookieBanner/></>;
 function Heading({tag,title,copy,center=false}:{tag?:string;title:string;copy?:string;center?:boolean}){return <div className={`heading ${center?"center":""}`}>{tag&&<span className="eyebrow">{tag}</span>}<h2>{title}</h2>{copy&&<p>{copy}</p>}</div>}
 
 function ShiftUI(){
@@ -79,6 +90,7 @@ function Blog({slug}:{slug:string}){
       setMeta("description",description);
       setMeta("og:title",data.og_title||title,"property");
       setMeta("og:description",data.og_description||description,"property");
+      setMeta("og:image",absImage(data.featured_image)||`${siteUrl}/assets/social-share.png`,"property");
       const canonicalUrl=data.canonical_url||`${siteUrl}/blogs/${slug}`;
       setCanonical(canonicalUrl);
       setMeta("og:url",canonicalUrl,"property");
@@ -91,10 +103,38 @@ function Blog({slug}:{slug:string}){
   return <Layout><BlogPostBody p={state.post}/><section className="section soft"><div className="wrap"><Heading title="Related articles"/><div className="bloggrid">{related.map(x=><BlogCard p={x} key={x.slug}/>)}</div></div></section><Final/></Layout>;
 }
 function About(){return <Layout><Founder large/><section className="section"><div className="wrap about"><Heading tag="Why Shiftaan exists" title="Your own clear record of your work."/><div><p>Employers have systems for schedules and payroll. Workers still use Notes, WhatsApp and memory to understand their own hours.</p><p>Shiftaan fixes that gap with a personal tool that stays simple, even when you work across several companies and sites.</p></div></div></section><Final/></Layout>}
+const CONTACT_FN_URL="https://qazegonoysisqrpyeucf.supabase.co/functions/v1/contact-submit";
+const CONTACT_ANON_KEY="sb_publishable_s2rK08Vjocuq5OeMWgCf7w_23gop4y0";
 function Support(){
   const [sent,setSent]=useState(false);
-  function submit(e:FormEvent){e.preventDefault();setSent(true)}
-  return <Layout><section className="support"><div className="wrap"><h1>How can we help?</h1><p>Find a quick answer below, or send us a message and we'll get back to you within 1–2 working days.</p></div></section><section className="section"><div className="wrap supportgrid">{[["Account help","Getting started, signing in and managing your details."],["Shift tracking help","Adding, editing and organising shift records."],["Payments & pay tracking","Understanding statuses and recording payments."],["Technical issues","Help when something is not working."]].map(x=><A href="/faq" key={x[0]}><I>?</I><h3>{x[0]}</h3><p>{x[1]}</p><b>View common questions →</b></A>)}</div></section><section className="section soft"><div className="wrap contact"><div><h2>Still need help? Tell us what's happening</h2><p>We aim to reply within 1–2 working days. For account issues, use the email connected to your account.</p></div><form onSubmit={submit}>{sent?<div><I>✓</I><h3>Message ready</h3><p>Thanks. This form is ready to connect to Shiftaan's verified support endpoint before launch.</p></div>:<><label>Name<input required autoComplete="name"/></label><label>Email<input required type="email" autoComplete="email"/></label><label>Subject<input required/></label><label>Message<textarea required rows={6}/></label><button className="btn">Send message →</button></>}</form></div></section></Layout>
+  const [sending,setSending]=useState(false);
+  const [err,setErr]=useState("");
+  const startedAt=useState(()=>Date.now())[0];
+  async function submit(e:FormEvent){
+    e.preventDefault();
+    setErr("");
+    const f=e.target as HTMLFormElement;
+    const data={
+      name:(f.elements.namedItem("name") as HTMLInputElement).value.trim(),
+      email:(f.elements.namedItem("email") as HTMLInputElement).value.trim(),
+      subject:(f.elements.namedItem("subject") as HTMLInputElement).value.trim(),
+      message:(f.elements.namedItem("message") as HTMLTextAreaElement).value.trim(),
+      company:(f.elements.namedItem("company") as HTMLInputElement).value, // honeypot
+      started_at:startedAt,
+    };
+    setSending(true);
+    try{
+      const res=await fetch(CONTACT_FN_URL,{method:"POST",headers:{apikey:CONTACT_ANON_KEY,Authorization:`Bearer ${CONTACT_ANON_KEY}`,"Content-Type":"application/json"},body:JSON.stringify(data)});
+      const body=await res.json().catch(()=>({}));
+      if(!res.ok) throw new Error(body.error||"Something went wrong. Please try again.");
+      setSent(true);
+    }catch(e:any){
+      setErr(e.message||"Something went wrong. Please try again.");
+    }finally{
+      setSending(false);
+    }
+  }
+  return <Layout><section className="support"><div className="wrap"><h1>How can we help?</h1><p>Find a quick answer below, or send us a message and we'll get back to you within 1–2 working days.</p></div></section><section className="section"><div className="wrap supportgrid">{[["Account help","Getting started, signing in and managing your details."],["Shift tracking help","Adding, editing and organising shift records."],["Payments & pay tracking","Understanding statuses and recording payments."],["Technical issues","Help when something is not working."]].map(x=><A href="/faq" key={x[0]}><I>?</I><h3>{x[0]}</h3><p>{x[1]}</p><b>View common questions →</b></A>)}</div></section><section className="section soft"><div className="wrap contact"><div><h2>Still need help? Tell us what's happening</h2><p>We aim to reply within 1–2 working days. For account issues, use the email connected to your account.</p></div><form onSubmit={submit}>{sent?<div><I>✓</I><h3>Message sent</h3><p>Thanks — we've got your message and will reply within 1–2 working days.</p></div>:<><label>Name<input name="name" required autoComplete="name"/></label><label>Email<input name="email" required type="email" autoComplete="email"/></label><label>Subject<input name="subject" required/></label><label>Message<textarea name="message" required rows={6}/></label><label className="hp" aria-hidden="true" tabIndex={-1}>Company<input name="company" tabIndex={-1} autoComplete="off"/></label>{err&&<p className="formerror">{err}</p>}<button className="btn" disabled={sending}>{sending?"Sending…":"Send message →"}</button></>}</form></div></section></Layout>
 }
 const legalNote="This page describes Shiftaan's actual functionality as of the date below. It's prepared as accurately as possible but isn't a substitute for independent legal advice — have it reviewed by a solicitor before relying on it for formal compliance.";
 const privacyContent:[string,string|string[]][]=[
@@ -190,6 +230,7 @@ export default function App(){
     setMeta("description",meta.description);
     setMeta("og:title",meta.title,"property");
     setMeta("og:description",meta.description,"property");
+    setMeta("og:image",`${siteUrl}/assets/social-share.png`,"property");
     const canonicalPath=meta.canonical||p;
     const canonicalUrl=`${siteUrl}${canonicalPath==="/"?"/":canonicalPath}`;
     setCanonical(canonicalUrl);
