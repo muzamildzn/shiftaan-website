@@ -137,6 +137,7 @@ for (const [routePath, meta] of Object.entries(pageMeta)) {
     title: meta.title,
     description: meta.description,
     canonicalPath: meta.canonical || routePath,
+    image: absImage(meta.image) || `${siteUrl}/assets/social-share.png`,
     jsonLd,
   });
   write(routePath, html);

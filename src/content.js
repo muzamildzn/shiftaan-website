@@ -38,7 +38,7 @@ export const pageMeta = {
   },
   "/pricing": {
     title: "Pricing | Shiftaan Shift Tracker App",
-    description: "Track shifts for one company free, or unlock unlimited companies for £2.49/month. Simple pricing for Shiftaan's security guard shift tracker.",
+    description: "Track shifts for up to 3 companies free, or unlock unlimited companies for £2.49/month. Simple pricing for Shiftaan's security guard shift tracker.",
   },
   "/about": {
     title: "About Shiftaan | Built for Security Guards & Shift Workers",
