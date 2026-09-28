@@ -619,6 +619,38 @@ ul {
   line-height: 1.6;
 }
 
+.project-result {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  max-width: 520px;
+  margin-top: 28px;
+  padding: 18px 0;
+  border-block: 1px solid var(--line);
+}
+
+.project-result strong {
+  flex: 0 0 auto;
+  font-size: clamp(28px, 2.8vw, 40px);
+  font-weight: 520;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.project-result span {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.project-dark .project-result {
+  border-color: var(--dark-line);
+}
+
+.project-dark .project-result span {
+  color: var(--dark-muted);
+}
+
 .project-disciplines {
   margin-top: 24px;
   letter-spacing: 0.06em;
@@ -1186,9 +1218,7 @@ ul {
   margin-top: 40px;
 }
 
-.contact-actions .button-ghost {
-  margin-left: -14px;
-}
+
 
 /* ---------- Footer ---------- */
 
@@ -1681,9 +1711,6 @@ ul {
     gap: 12px;
   }
 
-  .contact-actions .button-ghost {
-    margin-left: 0;
-  }
 
   .contact-actions .out-link {
     align-self: flex-start;

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
 const EMAIL = "malik@bemuzamil.com"
+// Upload the PDF to the web root in cPanel with exactly this file name.
+const CV_URL = "/Malik-Muzamil-UX-Designer-CV.pdf"
+const MEDIUM_URL = "https://medium.com/@bemuzamil"
 
 const social = [
   ["LinkedIn", "https://www.linkedin.com/in/malikmuzamil/"],
@@ -13,7 +16,7 @@ const social = [
 const navigation = [
   ["work", "Work"],
   ["about", "About"],
-  ["notes", "Notes"],
+  ["writing", "Writing"],
 ] as const
 
 type Project = {
@@ -29,6 +32,9 @@ type Project = {
   image: { src: string; width: number; height: number; alt: string }
   caption: string
   notes?: [string, string][]
+  // One verifiable outcome per project. Leave undefined rather than guess:
+  // the block is hidden until a real result is filled in.
+  result?: { value: string; label: string }
   layout: "feature" | "split" | "split-reverse" | "wide" | "dark"
 }
 
@@ -64,9 +70,14 @@ const projects: Project[] = [
       ],
       [
         "The result",
-        "A live, responsive product designed around the real workflow of a guard.",
+        "Live at shiftaan.com. Guards log a shift in under 30 seconds and see their hours, expected pay and what is still unpaid.",
       ],
     ],
+    result: {
+      value: "< 30 sec",
+      label:
+        "to log a shift (start, finish, break and rate) in the live product, free for one company",
+    },
     layout: "feature",
   },
   {
@@ -154,26 +165,10 @@ const projects: Project[] = [
   },
 ]
 
-const notes = [
-  {
-    title: "Apple Ring vs Oura Ring: What to Expect From Apple’s Wearable",
-    description:
-      "An honest look at what Apple could bring to the smart ring market.",
-    href: "https://bemuzamil.com/apple-ring-vs-oura-ring-what-to-expect-from-apples-wearable/",
-  },
-  {
-    title: "Apple Smart Ring: Release Date, Features, and Everything We Know",
-    description:
-      "What the latest reports tell us about Apple’s possible next wearable.",
-    href: "https://bemuzamil.com/apple-smart-ring-release-date-features-and-everything-we-know/",
-  },
-  {
-    title: "Did Apple Raise iPhone Prices in 2026?",
-    description:
-      "A direct answer, with context on changes across Apple’s product line.",
-    href: "https://bemuzamil.com/did-apple-raise-iphone-prices-in-2026/",
-  },
-]
+// UX / product articles. Add real published pieces here as
+// { title, description, href }. While the list is empty the section
+// points to Medium instead of showing off-topic posts.
+const writing: { title: string; description: string; href: string }[] = []
 
 const principles = [
   ["01", "Understand before designing.", "Start from how people actually behave, not how we assume they do."],
@@ -369,6 +364,10 @@ function Header({ active }: { active: string }) {
           <span>0{navigation.length + 1}</span>
           Contact
         </a>
+        <a href={CV_URL} download onClick={close}>
+          <span>0{navigation.length + 2}</span>
+          Download CV
+        </a>
         <p>{EMAIL}</p>
       </nav>
     </header>
@@ -424,7 +423,7 @@ function ProjectImage({ project, eager = false }: { project: Project; eager?: bo
 }
 
 function ProjectStory({ project, next }: { project: Project; next?: Project }) {
-  const { id, number, name, kicker, statement, summary, disciplines, caseStudy, liveSite, notes, layout } =
+  const { id, number, name, kicker, statement, summary, disciplines, caseStudy, liveSite, notes, result, layout } =
     project
 
   return (
@@ -444,6 +443,12 @@ function ProjectStory({ project, next }: { project: Project; next?: Project }) {
         <div className="project-copy">
           <p className="project-statement">{statement}</p>
           {summary && <p className="project-summary">{summary}</p>}
+          {result && (
+            <p className="project-result">
+              <strong>{result.value}</strong>
+              <span>{result.label}</span>
+            </p>
+          )}
           <p className="project-disciplines">{disciplines}</p>
           <div className="project-actions">
             <OutLink href={caseStudy} variant="solid">
@@ -511,7 +516,7 @@ function CopyEmail() {
   )
 }
 
-const sectionIds = ["work", "about", "notes", "contact"]
+const sectionIds = ["work", "about", "writing", "contact"]
 const projectIds = projects.map((project) => project.id)
 
 export default function App() {
@@ -549,6 +554,9 @@ export default function App() {
                 </a>
                 <a href="#contact" className="text-link">
                   Get in touch
+                </a>
+                <a href={CV_URL} className="text-link" download>
+                  Download CV <span className="sr-only">(PDF)</span>
                 </a>
               </div>
               <p className="availability">
@@ -721,13 +729,13 @@ export default function App() {
           </div>
         </section>
 
-        <section className="notes" id="notes" aria-labelledby="notes-title">
+        <section className="notes" id="writing" aria-labelledby="writing-title">
           <div>
-            <span className="section-label">Notes</span>
-            <h2 id="notes-title">Things I&apos;m thinking about.</h2>
+            <span className="section-label">Writing</span>
+            <h2 id="writing-title">Notes on UX and product.</h2>
           </div>
           <ul className="note-list">
-            {notes.map((note, index) => (
+            {writing.map((note, index) => (
               <li key={note.title}>
                 <ExternalLink href={note.href} className="note">
                   <span className="note-number">0{index + 1}</span>
@@ -741,6 +749,22 @@ export default function App() {
                 </ExternalLink>
               </li>
             ))}
+            <li>
+              <ExternalLink href={MEDIUM_URL} className="note">
+                <span className="note-number">→</span>
+                <span className="note-body">
+                  <span className="note-title">
+                    {writing.length ? "More writing on Medium" : "Read my writing on Medium"}
+                  </span>
+                  <span className="note-description">
+                    Articles and longer thoughts, published on Medium.
+                  </span>
+                </span>
+                <span className="note-read" aria-hidden="true">
+                  Medium <span>↗</span>
+                </span>
+              </ExternalLink>
+            </li>
           </ul>
         </section>
 
@@ -760,6 +784,9 @@ export default function App() {
               Email me
             </a>
             <CopyEmail />
+            <a href={CV_URL} className="button button-ghost" download>
+              Download CV <span className="sr-only">(PDF)</span>
+            </a>
             <OutLink href={social[0][1]}>LinkedIn</OutLink>
             <OutLink href={social[1][1]}>Behance</OutLink>
           </div>
