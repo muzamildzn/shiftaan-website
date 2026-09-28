@@ -1,0 +1,43 @@
+# bemuzamil.com (single-page portfolio, replaces the old WordPress site)
+
+Options -Indexes
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 1. Always use https://bemuzamil.com (no http, no www)
+  RewriteCond %{HTTPS} off [OR]
+  RewriteCond %{HTTP_HOST} ^www\. [NC]
+  RewriteRule ^ https://bemuzamil.com%{REQUEST_URI} [L,R=301]
+
+  # 2. Old WordPress addresses (blog posts, /wp-admin, /feed, /category/...)
+  #    no longer exist: send them permanently to the homepage.
+  #    Real files (images, CSS/JS, the CV PDF) are served as normal.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^.+$ / [L,R=301]
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript text/javascript application/json image/svg+xml text/plain application/xml
+</IfModule>
+
+# Caching
+<IfModule mod_headers.c>
+  # Built JS/CSS have a content hash in their name, so they can be cached forever
+  <FilesMatch "^index-.*\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # Images: one month
+  <FilesMatch "\.(webp|jpg|jpeg|png|svg|ico)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+  # The page itself and the CV: always check for a newer version
+  <FilesMatch "\.(html|pdf)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
