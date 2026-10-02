@@ -21,34 +21,26 @@ function Footer(){
   const cols=[["Product",["How it works","/how-it-works"],["Pricing","/pricing"],["FAQ","/faq"]],["Resources",["Blog","/blogs"],["Support","/support"]],["Company",["About","/about"]],["Legal",["Privacy Policy","/privacy"],["Terms & Conditions","/terms"],["Cookie Policy","/cookies"]]];
   return <footer><div className="wrap footergrid"><div><Logo/><p>Track your shifts, hours and pay in one place.</p><CTA/></div><div className="footlinks">{cols.map(c=><div key={c[0] as string}><b>{c[0]}</b>{c.slice(1).map((x:any)=><A href={x[1]} key={x[1]}>{x[0]}</A>)}</div>)}</div></div><div className="wrap fine"><span>© 2026 Shiftaan. All rights reserved.</span><span><A href="https://x.com/tryshiftaan">X</A> · <A href="https://instagram.com/tryshiftaan">Instagram</A> · @tryshiftaan</span></div></footer>
 }
-const GA_ID="G-N1XVMPYP5G";
 const COOKIE_CONSENT_KEY="shiftaan-cookie-consent"; // "accepted" | "declined"
 
-// Loads Google Analytics only once the visitor has actively accepted —
-// never on page load, never for a "declined" or unmade choice. This is the
-// only thing on shiftaan.com that sets a non-essential cookie.
-function loadAnalytics(){
-  if((window as any).__shiftaanGaLoaded)return;
-  (window as any).__shiftaanGaLoaded=true;
-  const s=document.createElement("script");
-  s.async=true;
-  s.src=`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
-  document.head.appendChild(s);
-  (window as any).dataLayer=(window as any).dataLayer||[];
-  function gtag(...args:any[]){(window as any).dataLayer.push(args)}
-  (window as any).gtag=gtag;
-  gtag("js",new Date());
-  gtag("config",GA_ID,{anonymize_ip:true});
+// The Google tag (gtag.js) itself loads unconditionally from index.html, so
+// Google's own tag-detection tools see it on every page load. What's
+// consent-gated is Google Consent Mode's analytics_storage flag: it starts
+// "denied" (set in index.html, before gtag.js even loads), so no cookie is
+// set and no personal data is stored until the visitor actively accepts —
+// this function just flips that flag via the gtag already on the page.
+function updateAnalyticsConsent(granted:boolean){
+  (window as any).gtag?.("consent","update",{analytics_storage:granted?"granted":"denied"});
 }
 function getCookieConsent(){try{return localStorage.getItem(COOKIE_CONSENT_KEY)}catch{return null}}
 function CookieBanner(){
   const [show,setShow]=useState(false);
   useEffect(()=>{
     const choice=getCookieConsent();
-    if(choice==="accepted")loadAnalytics();
+    if(choice==="accepted")updateAnalyticsConsent(true);
     else if(!choice)setShow(true);
   },[]);
-  function accept(){setShow(false);try{localStorage.setItem(COOKIE_CONSENT_KEY,"accepted")}catch{}loadAnalytics()}
+  function accept(){setShow(false);try{localStorage.setItem(COOKIE_CONSENT_KEY,"accepted")}catch{}updateAnalyticsConsent(true)}
   function decline(){setShow(false);try{localStorage.setItem(COOKIE_CONSENT_KEY,"declined")}catch{}}
   if(!show)return null;
   return <div className="cookiebanner" role="dialog" aria-label="Cookie notice"><p>We'd like to use Google Analytics to understand how visitors use this site. Signing in to the Shiftaan app also uses one essential cookie to keep you logged in, always on. See our <A href="/cookies">Cookie Policy</A>.</p><div className="cookiebtns"><button className="btn secondary" onClick={decline}>Necessary only</button><button className="btn" onClick={accept}>Accept</button></div></div>;
@@ -206,7 +198,7 @@ const cookiesContent:[string,string|string[]][]=[
   ["What cookies are","Cookies (and similar technologies like local storage) are small pieces of data a website or app can store in your browser, typically to remember who you are or how you've used the site."],
   ["What the Shiftaan website uses","The shiftaan.com marketing website sets no cookies by default. If you accept analytics from the cookie banner, Google Analytics sets cookies (see below) to understand how visitors use the site. We never use advertising cookies."],
   ["What the Shiftaan app uses","To keep you signed in, the Shiftaan app (app.shiftaan.com) relies on essential authentication storage provided by Supabase, our authentication provider, held in your browser as local storage or a cookie depending on your device. This is strictly necessary for the app to work — without it, you'd be signed out every time you opened it."],
-  ["Analytics and measurement","With your consent, given through the cookie banner, we use Google Analytics to understand how visitors use the marketing website — which pages are visited, roughly how, and from where. Google Analytics sets its own cookies (typically named _ga and _ga_*) to do this, and IP addresses are anonymised before being stored. It only runs if you click \"Accept\" on the cookie banner; choosing \"Necessary only\" means it never loads. You can opt out of Google Analytics across all websites using Google's browser add-on at tools.google.com/dlpage/gaoptout."],
+  ["Analytics and measurement","We use Google Analytics to understand how visitors use the marketing website — which pages are visited, roughly how, and from where. By default no analytics cookie is set and no visit data is stored against you. Only if you click \"Accept\" on the cookie banner do we start storing that data, using cookies typically named _ga and _ga_*; choosing \"Necessary only\" keeps analytics storage switched off. You can opt out of Google Analytics across all websites using Google's browser add-on at tools.google.com/dlpage/gaoptout."],
   ["Third-party cookies","Google Analytics is the only third-party cookie the shiftaan.com marketing website can set, and only after you accept it."],
   ["Managing cookies","Use the buttons below to change your choice at any time — this clears your saved preference and the banner reappears immediately."],
   ["Contact","Questions about this policy can be sent through the contact form on our Support page."],

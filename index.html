@@ -10,6 +10,24 @@
     <meta name="twitter:site" content="@tryshiftaan" />
     <meta name="theme-color" content="#1648e9" />
     <link rel="icon" href="/assets/FavIcon.svg" />
+    <!-- Google tag (gtag.js) -- loaded on every page load so Google's own
+         tag-detection tools see it immediately. Consent Mode keeps this
+         compliant: analytics_storage defaults to denied (no cookie, no
+         personal data) until the visitor accepts the cookie banner, at
+         which point src/App.tsx calls gtag('consent','update',...). -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'analytics_storage': 'denied'
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-N1XVMPYP5G');
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N1XVMPYP5G"></script>
     <!-- figma:head-end -->
   </head>
   <body>
